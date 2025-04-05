@@ -1,8 +1,15 @@
 from openai import OpenAI
 from demo_util import color
+from demo_util import color
+import os
+import sys
+from dotenv import load_dotenv
 
+load_dotenv()
+openai_key =os.getenv("OPENAI_API_KEY")
 
-client = OpenAI()
+client = OpenAI(api_key=openai_key)
+
 
 # === Demo Loop ===
 

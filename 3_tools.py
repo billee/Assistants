@@ -1,9 +1,16 @@
 from openai import OpenAI
 from demo_util import color, function_to_schema
 import json
+import json
+import os
+import sys
+from dotenv import load_dotenv
 
+load_dotenv()
+openai_key =os.getenv("OPENAI_API_KEY")
 
-client = OpenAI()
+client = OpenAI(api_key=openai_key)
+
 
 # === Demo Loop ===
 
@@ -45,6 +52,9 @@ def run_full_turn(system_message, tools, messages):
 
     tool_schemas = [function_to_schema(f) for f in tools]
 
+    print("schemas...............")
+    print(tool_schemas)
+
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "system", "content": system_message}] + messages,
@@ -55,6 +65,10 @@ def run_full_turn(system_message, tools, messages):
 
     if message.content:
         print(color("Assistant:", "yellow"), message.content)
+
+    print("message....................")
+    print(message)
+
 
     if not message.tool_calls:
         return message
