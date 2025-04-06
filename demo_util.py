@@ -29,6 +29,10 @@ def function_to_schema(func) -> dict:
 
     try:
         signature = inspect.signature(func)
+
+        print(func)
+        print(signature)
+
     except ValueError as e:
         raise ValueError(
             f"Failed to get signature for function {func.__name__}: {str(e)}"
@@ -44,11 +48,17 @@ def function_to_schema(func) -> dict:
             )
         parameters[param.name] = {"type": param_type}
 
+    print('parameters.....................')
+    print(parameters)
+
     required = [
         param.name
         for param in signature.parameters.values()
         if param.default == inspect._empty
     ]
+
+    print('required.....................')
+    print(required)
 
     return {
         "type": "function",

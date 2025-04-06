@@ -1,12 +1,21 @@
 from openai import OpenAI
 from demo_util import color, function_to_schema
 import json
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
+import os
+import sys
+from dotenv import load_dotenv
+
+load_dotenv()
+openai_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=openai_key)
+MODEL='gpt-4o-mini'
+
 
 
 class Agent(BaseModel):
     name: str = "Agent"
-    model: str = "gpt-4o"
+    model: str = "gpt-4o-mini"
     instructions: str = "You are a helpful Agent"
     tools: list = []
 
@@ -15,7 +24,16 @@ class Response(BaseModel):
     messages: list
 
 
-client = OpenAI()
+class EscalationData(BaseModel):
+    summary: str
+    item_rejection: str
+
+    @field_validator('item_rejection')
+    def validate_item_rejection(cls, value):
+        if value.strip().lower() == 'n/a':
+            raise ValueError("item_rejection cannot be 'N/A'")
+        return value
+
 
 # === Demo Loop ===
 
@@ -30,6 +48,12 @@ def run_full_turn(agent, messages):
         # turn python functions into tools and save a reverse map
         tool_schemas = [function_to_schema(tool) for tool in agent.tools]
         tools_map = {tool.__name__: tool for tool in agent.tools}
+
+        # print(tool_schemas)
+
+        # print('quitting.......')
+        # quit()
+
 
         # === 1. get openai completion ===
         response = client.chat.completions.create(
@@ -92,11 +116,12 @@ def execute_refund(item_id, reason="not provided"):
     return "success"
 
 
-def escalate_to_human(summary):
+def escalate_to_human(summary, item_rejection):
     """Only call this if explicitly asked to."""
     print(color("Escalating to human agent...", "red"))
     print("\n=== Escalation Report ===")
     print(f"Summary: {summary}")
+    print(f"Summary: {item_rejection}")
     print("=========================\n")
     exit()
 
